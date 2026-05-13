@@ -1,0 +1,39 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Listing {
+  id               String   @id @default(cuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  title            String
+  description      String
+  city             String
+  neighborhood     String?
+  rooms            Int
+  beds             Int
+  /// קטגוריית מרחק לפי תקנון (לסינון ולסימולציה)
+  walkDistance     WalkDistance
+  availableFrom    DateTime
+  availableTo      DateTime
+  askingPriceNis   Int?
+  contactPhone     String
+  contactWhatsapp  String?
+  imageUrl         String?
+  published        Boolean  @default(true)
+  /// מי פרסם (אימות Google)
+  publisherEmail   String?
+}
+
+enum WalkDistance {
+  upTo10
+  upTo20
+  over20
+}
