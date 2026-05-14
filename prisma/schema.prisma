@@ -13,20 +13,59 @@ model Listing {
   id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  // --- כותרת ותיאור ---
   title            String
-  description      String
+  description      String?
+
+  // --- מיקום ---
   city             String
   neighborhood     String?
-  rooms            Int
-  beds             Int
+  address          String?   /// כתובת מדויקת (רחוב + מספר)
+  floor            Int?      /// קומה
+
+  // --- מרחק ---
   /// קטגוריית מרחק לפי תקנון (לסינון ולסימולציה)
   walkDistance     WalkDistance
+
+  // --- שינה ---
+  rooms            Int       /// חדרים סגורים
+  beds             Int       /// סה"כ מיטות
+  bedsDouble       Int?      /// מיטות זוגיות
+  bedsJewish       Int?      /// מיטות יהודיות (נפרדות)
+  mattresses       Int?      /// מזרונים
+  cribs            Int?      /// עריסות / לולים
+  sofa             Boolean   @default(false) /// ספה נפתחת
+  bedLinens        Boolean   @default(false) /// מצעים
+
+  // --- ציוד ---
+  ac               Boolean   @default(false) /// מזגן מרכזי
+  shabbatPlate     Boolean   @default(false) /// פלטה לשבת
+  shabbatUrnBoiler Boolean   @default(false) /// מיחם שבת
+  shabbatClock     Boolean   @default(false) /// שעון שבת
+
+  // --- שירותים ומרפסת ---
+  bathrooms        Int?      /// מספר שירותים/חדרי רחצה
+  balconyType      String?   /// מרפסת / גינה / חצר / אין
+  balconySize      String?   /// גדולה / בינונית / קטנה
+
+  // --- סלון ואוכל ---
+  livingRoomSize   String?   /// גודל סלון: גדול / בינוני / קטן
+  diningTable      String?   /// שולחן: מטבח / רגיל / אין
+  chairs           String?   /// כסאות: סוג וכמות
+
+  // --- מחיר ותמונה ---
+  askingPriceNis   Int?
+  imageUrl         String?
+
+  // --- זמינות ---
   availableFrom    DateTime
   availableTo      DateTime
-  askingPriceNis   Int?
+
+  // --- קשר ---
   contactPhone     String
   contactWhatsapp  String?
-  imageUrl         String?
+
   published        Boolean  @default(true)
   /// מי פרסם (אימות Google)
   publisherEmail   String?
