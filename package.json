@@ -7,7 +7,7 @@
     "go": "node scripts/setup-env.cjs && prisma migrate deploy && next dev",
     "dev": "next dev",
     "dev:clean": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev",
-    "build": "prisma migrate deploy && prisma generate && next build",
+    "build": "prisma db push --accept-data-loss && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
