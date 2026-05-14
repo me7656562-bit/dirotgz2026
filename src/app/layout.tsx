@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "דירות לחג — סטאלין קארלין",
-  description: "חיפוש דירות לחג וסימולציית מחיר לפי תקנון המרכז",
+  description: "חיפוש דירות לחג וסימולטור מחיר לפי תקנון המרכז",
 };
 
 export default function RootLayout({

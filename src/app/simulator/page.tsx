@@ -6,7 +6,7 @@ import { clampInt } from "@/lib/pricing/shavuot5786StolinKarlin";
 import { breadcrumbLink } from "@/lib/uiStyles";
 
 export const metadata = {
-  title: "סימולציית מחיר — שבועות תשפ״ו",
+  title: "סימולטור מחיר — שבועות תשפ״ו",
   description: "חישוב לפי תקנון מרכז סטאלין קארלין לחג השבועות תשפ״ו",
 };
 
@@ -43,7 +43,7 @@ export default async function SimulatorPage({
 
         <header className="space-y-3">
           <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
-            סימולציית שכירות — חג השבועות תשפ״ו
+            סימולטור שכירות — חג השבועות תשפ״ו
           </h1>
           <p className="max-w-prose text-pretty leading-relaxed text-stone-600 dark:text-stone-400">
             החישוב מבוסס על טבלת המחירים וההתאמות שבתקנון מרכז סטאלין קארלין. זמני ההליכה בטבלה הם ביחס לבית הכנסת:{" "}

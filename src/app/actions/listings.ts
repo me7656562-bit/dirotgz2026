@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { parseWalkDistance } from "@/lib/listingLabels";
@@ -87,8 +86,6 @@ export async function createListingAction(
   const chairs = getStr(formData, "chairs");
   const walkRaw = String(formData.get("walkDistance") ?? "");
   const walkDistance = parseWalkDistance(walkRaw);
-  // מזרון שוכר
-  getInt(formData, "renterMattresses"); // קריאה בלבד — לא נשמר בDB (משפיע על מחיר בלבד)
   // תאריכי שבועות תשפ"ו — ברירת מחדל אם לא הוזנו
   const availableFrom = parseDateOnly(String(formData.get("availableFrom") ?? "")) ?? new Date("2025-06-01T00:00:00Z");
   const availableTo = parseDateOnly(String(formData.get("availableTo") ?? "")) ?? new Date("2025-06-03T23:59:59Z");

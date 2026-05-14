@@ -19,7 +19,7 @@ export default function TekannonPage() {
             ·
           </span>
           <Link href="/simulator" className={breadcrumbLink}>
-            סימולציה
+            סימולטור
           </Link>
         </nav>
 

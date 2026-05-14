@@ -18,7 +18,7 @@ export default function HomePage() {
           </h1>
 
           <p className="mx-auto mt-4 max-w-sm text-pretty text-base leading-relaxed text-stone-600 dark:text-stone-400">
-            לוח מודעות פנימי וסימולציית מחיר לפי תקנון המרכז
+            לוח מודעות פנימי וסימולטור מחיר לפי תקנון המרכז
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function HomePage() {
           <Link href="/simulator"
             className="group flex flex-col items-center gap-2 rounded-3xl border-2 border-amber-200 bg-white px-4 py-5 font-bold text-amber-800 shadow-md shadow-amber-100/60 transition hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-lg dark:border-amber-800/60 dark:bg-stone-900 dark:text-amber-300">
             <span className="text-4xl transition group-hover:scale-110">🧮</span>
-            <span className="text-sm">סימולציית מחיר</span>
+            <span className="text-sm">סימולטור מחיר</span>
           </Link>
 
           <Link href="/tekannon"

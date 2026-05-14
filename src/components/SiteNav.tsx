@@ -23,7 +23,7 @@ const nav: NavItem[] = [
     match: (p) => p === "/listings" || (p.startsWith("/listings/") && !p.startsWith("/listings/new")),
   },
   { href: "/listings/new", label: "פרסום", icon: <PlusCircle className="h-3.5 w-3.5" />, match: (p) => p.startsWith("/listings/new") },
-  { href: "/simulator", label: "סימולציה", icon: <Calculator className="h-3.5 w-3.5" /> },
+  { href: "/simulator", label: "סימולטור", icon: <Calculator className="h-3.5 w-3.5" /> },
   { href: "/tekannon", label: "תקנון", icon: <FileText className="h-3.5 w-3.5" /> },
 ];
 

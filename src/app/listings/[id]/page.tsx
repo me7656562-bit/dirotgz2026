@@ -268,7 +268,7 @@ export default async function ListingDetailPage({ params }: Props) {
             className={btnPrimary}
           >
             <Footprints className="h-4 w-4" />
-            סימולציית מחיר לפי תקנון
+            סימולטור מחיר לפי תקנון
           </Link>
           <Link href="/listings" className={btnSecondary}>
             עוד מודעות
