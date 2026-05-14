@@ -6,8 +6,26 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { parseWalkDistance } from "@/lib/listingLabels";
 
+/** שמור תמונות Cloudinary למודעה קיימת */
+export async function saveListingImagesAction(
+  listingId: string,
+  images: { url: string; publicId: string }[]
+): Promise<void> {
+  if (!images.length) return;
+  await prisma.listingImage.createMany({
+    data: images.map((img, i) => ({
+      listingId,
+      url: img.url,
+      publicId: img.publicId,
+      order: i,
+    })),
+    skipDuplicates: true,
+  });
+  revalidatePath(`/listings/${listingId}`);
+}
+
 export type ListingFormState =
-  | { ok: true }
+  | { ok: true; listingId: string }
   | { ok: false; message: string }
   | null;
 
@@ -134,5 +152,6 @@ export async function createListingAction(
   });
 
   revalidatePath("/listings");
-  redirect(`/listings/${listing.id}`);
+  // מחזיר את ה-ID כדי שהלקוח יוכל להעלות תמונות ואז לעשות redirect
+  return { ok: true, listingId: listing.id };
 }

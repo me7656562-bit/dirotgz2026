@@ -89,8 +89,27 @@ export default async function ListingDetailPage({ params }: Props) {
           )}
         </div>
 
-        {/* תמונה */}
-        {listing.imageUrl ? (
+        {/* גלריית תמונות */}
+        {listing.images && listing.images.length > 0 ? (
+          <div className="space-y-2">
+            {/* תמונה ראשית */}
+            <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-sm dark:border-stone-700">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={listing.images[0].url} alt="תמונת הדירה" className="max-h-80 w-full object-cover" />
+            </div>
+            {/* תמונות נוספות */}
+            {listing.images.length > 1 && (
+              <div className="grid grid-cols-3 gap-2">
+                {listing.images.slice(1).map((img, i) => (
+                  <div key={img.id} className="overflow-hidden rounded-xl border border-stone-200 dark:border-stone-700">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt={`תמונה ${i + 2}`} className="h-24 w-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : listing.imageUrl ? (
           <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-inner dark:border-stone-700">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={listing.imageUrl} alt="" className="max-h-80 w-full object-cover" />

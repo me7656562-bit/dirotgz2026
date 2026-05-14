@@ -1,11 +1,16 @@
 "use client";
 
-import { useActionState, useState, useMemo } from "react";
-import { createListingAction } from "@/app/actions/listings";
+import { useActionState, useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createListingAction, saveListingImagesAction } from "@/app/actions/listings";
+import { CloudinaryUpload } from "@/components/CloudinaryUpload";
 import { SYNAGOGUE_ADDRESS_HE } from "@/lib/synagogue";
 import { computeShavuot5786Total } from "@/lib/pricing/shavuot5786StolinKarlin";
 import type { WalkDistance } from "@/lib/pricing/shavuot5786StolinKarlin";
 import { btnPrimary, hintClass, inputClass, labelClass, selectClass } from "@/lib/uiStyles";
+
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "";
 
 /* ─── Toggle card ─── */
 function Toggle({
@@ -49,7 +54,24 @@ function Num({
 
 /* ─── Main form ─── */
 export function NewListingForm() {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(createListingAction, null);
+  const [uploadedImages, setUploadedImages] = useState<{ url: string; publicId: string }[]>([]);
+  const [savingImages, setSavingImages] = useState(false);
+
+  // אחרי יצירה מוצלחת — שמור תמונות ועבור לדף המודעה
+  useEffect(() => {
+    if (state?.ok !== true) return;
+    const listingId = state.listingId;
+    if (uploadedImages.length === 0) {
+      router.push(`/listings/${listingId}`);
+      return;
+    }
+    setSavingImages(true);
+    saveListingImagesAction(listingId, uploadedImages).then(() => {
+      router.push(`/listings/${listingId}`);
+    });
+  }, [state, router, uploadedImages]);
 
   const [rooms, setRooms] = useState(3);
   const [beds, setBeds] = useState(4);
@@ -241,6 +263,24 @@ export function NewListingForm() {
         </div>
       )}
 
+      {/* ── תמונות ── */}
+      {CLOUD_NAME && UPLOAD_PRESET && (
+        <section className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm dark:border-stone-700/80 dark:bg-stone-900">
+          <div className="bg-gradient-to-l from-pink-500 to-rose-500 px-5 py-2.5">
+            <p className="text-sm font-bold text-white">📷 תמונות הדירה</p>
+          </div>
+          <div className="p-5">
+            <CloudinaryUpload
+              cloudName={CLOUD_NAME}
+              uploadPreset={UPLOAD_PRESET}
+              onUploaded={setUploadedImages}
+              maxFiles={6}
+            />
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">עד 6 תמונות · התמונה הראשונה תוצג בכרטיס המודעה</p>
+          </div>
+        </section>
+      )}
+
       {/* ── קשר ── */}
       <section className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm dark:border-stone-700/80 dark:bg-stone-900">
         <div className="bg-gradient-to-l from-green-600 to-teal-600 px-5 py-2.5">
@@ -269,9 +309,9 @@ export function NewListingForm() {
         </div>
       </section>
 
-      <button type="submit" disabled={pending || !priceResult}
+      <button type="submit" disabled={pending || savingImages || !priceResult}
         className={`${btnPrimary} w-full py-4 text-base shadow-lg shadow-teal-800/25`}>
-        {pending ? "שולח…" : !priceResult ? "בחר מרחק כדי לפרסם" : "✓ פרסם מודעה"}
+        {savingImages ? "שומר תמונות…" : pending ? "שולח…" : !priceResult ? "בחר מרחק כדי לפרסם" : "✓ פרסם מודעה"}
       </button>
     </form>
   );

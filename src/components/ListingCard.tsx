@@ -1,7 +1,22 @@
 import Link from "next/link";
-import { MapPin, BedDouble, DoorOpen, Footprints, Banknote } from "lucide-react";
-import type { ListingModel } from "@/generated/prisma/models/Listing";
+import { MapPin, BedDouble, DoorOpen, Footprints } from "lucide-react";
 import { walkDistanceLabel } from "@/lib/listingLabels";
+
+type ListingWithImage = {
+  id: string;
+  title: string;
+  rooms: number;
+  beds: number;
+  walkDistance: string;
+  askingPriceNis: number | null;
+  address: string | null;
+  floor: number | null;
+  ac: boolean;
+  shabbatPlate: boolean;
+  sofa: boolean;
+  imageUrl: string | null;
+  images?: { url: string }[];
+};
 
 const distanceColor: Record<string, string> = {
   upTo10: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200",
@@ -9,23 +24,39 @@ const distanceColor: Record<string, string> = {
   over20: "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200",
 };
 
-export function ListingCard({ listing }: { listing: ListingModel }) {
+export function ListingCard({ listing }: { listing: ListingWithImage }) {
   const distCls = distanceColor[listing.walkDistance] ?? "bg-stone-100 text-stone-700";
+  const heroImage = listing.images?.[0]?.url ?? listing.imageUrl ?? null;
 
   return (
     <article className="group overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-md shadow-stone-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-900/10 dark:border-stone-700/80 dark:bg-stone-900 dark:shadow-black/30">
       <Link href={`/listings/${listing.id}`} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
 
-        {/* פס עליון צבעוני */}
-        <div className="h-1.5 w-full bg-gradient-to-l from-teal-400 via-cyan-400 to-teal-600" />
+        {/* תמונה ראשית או פס צבע */}
+        {heroImage ? (
+          <div className="relative h-44 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={heroImage} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            {listing.askingPriceNis != null && (
+              <div className="absolute bottom-3 left-3 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 px-3 py-1.5 shadow-md">
+                <span className="block text-base font-black tabular-nums text-white leading-none">
+                  {listing.askingPriceNis.toLocaleString("he-IL")} ₪
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="h-1.5 w-full bg-gradient-to-l from-teal-400 via-cyan-400 to-teal-600" />
+        )}
 
         <div className="p-5">
-          {/* כותרת + מחיר */}
+          {/* כותרת + מחיר (אם אין תמונה) */}
           <div className="flex items-start justify-between gap-3">
             <h2 className="text-lg font-black leading-snug text-stone-900 transition group-hover:text-teal-700 dark:text-stone-50 dark:group-hover:text-teal-300">
               {listing.title}
             </h2>
-            {listing.askingPriceNis != null && (
+            {!heroImage && listing.askingPriceNis != null && (
               <div className="shrink-0 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 px-3.5 py-1.5 text-center shadow-sm shadow-teal-600/30">
                 <span className="block text-base font-black tabular-nums text-white leading-none">
                   {listing.askingPriceNis.toLocaleString("he-IL")} ₪

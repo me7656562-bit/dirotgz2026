@@ -72,6 +72,17 @@ model Listing {
   publisherEmail   String?
 
   interests        Interest[]
+  images           ListingImage[]
+}
+
+model ListingImage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  url       String   /// Cloudinary URL
+  publicId  String?  /// Cloudinary public_id (למחיקה עתידית)
+  order     Int      @default(0)
 }
 
 model Interest {
