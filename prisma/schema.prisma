@@ -92,6 +92,8 @@ model Interest {
   listingId   String
   email       String   /// מייל המתעניין
   name        String?  /// שם (אופציונלי)
+  phone       String?  /// טלפון ליצירת קשר
+  message     String?  /// הודעה אישית למשכיר
 
   @@unique([listingId, email])
 }

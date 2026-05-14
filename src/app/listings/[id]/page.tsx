@@ -10,7 +10,7 @@ import { walkDistanceLabel } from "@/lib/listingLabels";
 import { SYNAGOGUE_ADDRESS_HE, SYNAGOGUE_ADDRESS_QUERY } from "@/lib/synagogue";
 import { breadcrumbLink, btnPrimary, btnSecondary, cardClass } from "@/lib/uiStyles";
 import { auth } from "@/auth";
-import { getInterestInfo } from "@/app/actions/interest";
+import { getInterestInfo, getInterestedListForOwner } from "@/app/actions/interest";
 import { InterestButton, MarkRentedButton } from "@/components/InterestButton";
 
 type Props = { params: Promise<{ id: string }> };
@@ -63,6 +63,7 @@ export default async function ListingDetailPage({ params }: Props) {
   const userEmail = session?.user?.email ?? null;
   const isOwner = userEmail === listing.publisherEmail;
   const { count: interestCount, isMine: alreadyInterested } = await getInterestInfo(id, userEmail);
+  const interestedList = isOwner ? await getInterestedListForOwner(id) : [];
 
   const mapsUrl = listing.address
     ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(SYNAGOGUE_ADDRESS_QUERY)}&destination=${encodeURIComponent(`${listing.address}, ${listing.city}`)}&travelmode=walking`
@@ -231,35 +232,106 @@ export default async function ListingDetailPage({ params }: Props) {
         </div>
 
         {/* מעוניין / הושכרה */}
-        <div className="rounded-2xl border border-stone-200/60 bg-stone-50/70 p-5 dark:border-stone-700/60 dark:bg-stone-800/40">
-          {listing.isRented ? (
-            <p className="rounded-xl bg-green-100 px-4 py-3 text-center font-bold text-green-800 dark:bg-green-950/50 dark:text-green-200">
-              🔑 הדירה הושכרה
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {userEmail && !isOwner && (
-                <InterestButton listingId={listing.id} isMine={alreadyInterested} count={interestCount} />
-              )}
-              {isOwner && (
-                <>
-                  {interestCount > 0 && (
-                    <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
-                      📬 {interestCount} {interestCount === 1 ? "מתעניין מחכה" : "מתעניינים מחכים"} לתשובתך
-                    </p>
-                  )}
+        {listing.isRented ? (
+          <div className="rounded-2xl bg-green-100 px-4 py-4 text-center font-bold text-green-800 dark:bg-green-950/50 dark:text-green-200">
+            🔑 הדירה הושכרה
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {userEmail && !isOwner && (
+              <InterestButton listingId={listing.id} isMine={alreadyInterested} count={interestCount} />
+            )}
+
+            {/* תצוגת המשכיר — רשימת מתעניינים מלאה */}
+            {isOwner && (
+              <div className="space-y-4 rounded-2xl border-2 border-amber-200 bg-amber-50/60 p-5 shadow-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="flex items-center gap-2 text-base font-bold text-amber-900 dark:text-amber-200">
+                    📬 מתעניינים בדירה שלך
+                    <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-black text-white">
+                      {interestedList.length}
+                    </span>
+                  </h2>
+                </div>
+
+                {interestedList.length === 0 ? (
+                  <p className="text-sm text-amber-800/80 dark:text-amber-300/70">
+                    עדיין אין מתעניינים. הם יופיעו כאן ברגע שמישהו יסמן עניין.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {interestedList.map((p) => (
+                      <li
+                        key={p.id}
+                        className="rounded-xl border border-amber-200/80 bg-white p-4 shadow-sm dark:border-amber-700/40 dark:bg-stone-900"
+                      >
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-bold text-stone-900 dark:text-stone-50">
+                              {p.name ?? p.email.split("@")[0]}
+                            </p>
+                            <p className="text-xs text-stone-500 dark:text-stone-400">
+                              סימן עניין: {fmtDate(p.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-1.5 text-sm">
+                          {p.phone && (
+                            <a
+                              href={`tel:${p.phone}`}
+                              className="inline-flex items-center gap-2 font-semibold text-teal-700 hover:underline dark:text-teal-300"
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                              {p.phone}
+                            </a>
+                          )}
+                          {p.phone && (
+                            <a
+                              href={`https://wa.me/972${p.phone.replace(/\D/g, "").replace(/^0/, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 font-semibold text-green-700 hover:underline dark:text-green-300"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" />
+                              שלח וואטסאפ
+                            </a>
+                          )}
+                          <a
+                            href={`mailto:${p.email}`}
+                            className="inline-flex items-center gap-2 text-stone-600 hover:underline dark:text-stone-300"
+                          >
+                            ✉️ {p.email}
+                          </a>
+                        </div>
+
+                        {p.message && (
+                          <div className="mt-3 rounded-lg bg-stone-50 p-3 text-sm text-stone-700 dark:bg-stone-800 dark:text-stone-200">
+                            <p className="mb-1 text-xs font-semibold text-stone-500 dark:text-stone-400">הודעה:</p>
+                            {p.message}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="border-t border-amber-200/60 pt-4 dark:border-amber-700/40">
                   <MarkRentedButton listingId={listing.id} />
-                </>
-              )}
-              {!userEmail && (
-                <p className="text-sm text-stone-500 dark:text-stone-400">
-                  <Link href="/api/auth/signin" className="font-semibold text-teal-700 underline dark:text-teal-400">התחברו</Link>
-                  {" "}כדי לסמן מעוניין
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+                </div>
+              </div>
+            )}
+
+            {!userEmail && (
+              <p className="rounded-xl bg-stone-100 px-4 py-3 text-center text-sm text-stone-600 dark:bg-stone-800 dark:text-stone-400">
+                <Link href="/api/auth/signin" className="font-semibold text-teal-700 underline dark:text-teal-400">
+                  התחברו עם Google
+                </Link>{" "}
+                כדי לסמן עניין בדירה
+              </p>
+            )}
+          </div>
+        )}
 
         {/* כפתורים */}
         <div className="flex flex-wrap gap-3 border-t border-stone-200/80 pt-4 dark:border-stone-700/80">
