@@ -24,7 +24,7 @@ export async function saveListingImagesAction(
 }
 
 export type ListingFormState =
-  | { ok: true; listingId: string }
+  | { ok: true; listingId: string; message?: string }
   | { ok: false; message: string }
   | null;
 
@@ -284,7 +284,7 @@ export async function updateListingAction(
     revalidatePath(`/listings/${listingId}`);
     revalidatePath("/listings");
 
-    return { ok: true, message: "המודעה עודכנה בהצלחה!" };
+    return { ok: true, listingId, message: "המודעה עודכנה בהצלחה!" };
   } catch (error) {
     console.error("Error updating listing:", error);
     return { ok: false, message: "שגיאה בעדכון המודעה. נסה שוב." };

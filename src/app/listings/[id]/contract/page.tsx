@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Download, Printer } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getListingById } from "@/lib/listings";
 import { walkDistanceLabel } from "@/lib/listingLabels";
-import { breadcrumbLink, btnPrimary, btnSecondary } from "@/lib/uiStyles";
+import { breadcrumbLink, btnSecondary } from "@/lib/uiStyles";
 import { auth } from "@/auth";
+import { ContractActions } from "@/components/ContractActions";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -54,47 +55,7 @@ export default async function ContractPage({ params }: Props) {
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50">
           חוזה שכירות
         </h1>
-        <div className="flex gap-3">
-          <button 
-            onClick={() => window.print()}
-            className={`${btnSecondary} flex items-center gap-2`}
-          >
-            <Printer className="h-4 w-4" />
-            הדפס
-          </button>
-          <button 
-            onClick={() => {
-              const content = document.getElementById('contract-content');
-              if (content) {
-                const newWindow = window.open('', '_blank');
-                newWindow?.document.write(`
-                  <html dir="rtl" lang="he">
-                    <head>
-                      <title>חוזה שכירות - ${listing.title}</title>
-                      <meta charset="utf-8">
-                      <style>
-                        body { font-family: 'Arial', sans-serif; padding: 20px; line-height: 1.6; }
-                        .contract-page { max-width: 800px; margin: 0 auto; }
-                        h1, h2 { text-align: center; }
-                        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
-                        .signature-area { display: flex; justify-content: space-between; margin-top: 40px; }
-                        .signature-box { text-align: center; min-height: 80px; }
-                        @media print { body { margin: 0; } }
-                      </style>
-                    </head>
-                    <body>${content.innerHTML}</body>
-                  </html>
-                `);
-                newWindow?.document.close();
-                setTimeout(() => newWindow?.print(), 100);
-              }
-            }}
-            className={`${btnPrimary} flex items-center gap-2`}
-          >
-            <Download className="h-4 w-4" />
-            הורד PDF
-          </button>
-        </div>
+        <ContractActions listingTitle={listing.title} />
       </div>
 
       {/* תוכן החוזה */}
@@ -182,10 +143,10 @@ export default async function ContractPage({ params }: Props) {
             <div className="space-y-2">
               <h3 className="font-bold text-base border-b border-stone-300 pb-1">ציוד וריהוט הכלול במחיר</h3>
               <div className="text-xs grid grid-cols-2 gap-2">
-                {listing.bedsDouble > 0 && <p>✓ מיטות כפולות: {listing.bedsDouble}</p>}
-                {listing.bedsJewish > 0 && <p>✓ מיטות יהודיות: {listing.bedsJewish}</p>}
-                {listing.mattresses > 0 && <p>✓ מזרונים: {listing.mattresses}</p>}
-                {listing.cribs > 0 && <p>✓ עריסות: {listing.cribs}</p>}
+                {(listing.bedsDouble ?? 0) > 0 && <p>✓ מיטות כפולות: {listing.bedsDouble}</p>}
+                {(listing.bedsJewish ?? 0) > 0 && <p>✓ מיטות יהודיות: {listing.bedsJewish}</p>}
+                {(listing.mattresses ?? 0) > 0 && <p>✓ מזרונים: {listing.mattresses}</p>}
+                {(listing.cribs ?? 0) > 0 && <p>✓ עריסות: {listing.cribs}</p>}
                 {listing.sofa && <p>✓ ספה נפתחת</p>}
                 {listing.bedLinens && <p>✓ מצעים</p>}
                 {listing.ac && <p>✓ מזגן</p>}

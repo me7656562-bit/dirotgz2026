@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Custom variants for small/square screens (Xiaomi F25 וכד') */
+@custom-variant tiny (@media (max-width: 400px));
+@custom-variant sm-square (@media (max-width: 480px) and (max-height: 640px));
+
 :root {
   --background: #fafaf9;
   --foreground: #1c1917;

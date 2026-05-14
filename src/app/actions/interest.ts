@@ -42,7 +42,7 @@ export async function markInterestAction(
 }
 
 /** בדיקה אם המשתמש כבר מעוניין + ספירה */
-export async function getInterestInfo(listingId: string, userEmail?: string) {
+export async function getInterestInfo(listingId: string, userEmail?: string | null) {
   const [userInterest, count] = await Promise.all([
     userEmail ? prisma.interest.findFirst({
       where: { listingId, email: userEmail },
@@ -52,22 +52,50 @@ export async function getInterestInfo(listingId: string, userEmail?: string) {
   ]);
 
   return {
-    userInterested: Boolean(userInterest),
+    isMine: Boolean(userInterest),
     count,
   };
 }
 
 /** המשכיר רואה רשימת כל המעוניינים */
-export async function getInterestedListForOwner(listingId: string, ownerEmail: string) {
+export async function getInterestedListForOwner(listingId: string) {
+  const session = await auth();
+  if (!session?.user?.email) return [];
+
   const listing = await prisma.listing.findFirst({
-    where: { id: listingId, publisherEmail: ownerEmail },
+    where: { id: listingId, publisherEmail: session.user.email },
     select: { id: true },
   });
-  
+
   if (!listing) return [];
 
   return prisma.interest.findMany({
     where: { listingId },
     orderBy: { createdAt: "desc" },
   });
+}
+
+/** המשכיר מסמן את הדירה כמושכרת */
+export async function markRentedAction(listingId: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { ok: false, message: "יש להתחבר כדי לסמן." };
+  }
+
+  const listing = await prisma.listing.findFirst({
+    where: { id: listingId, publisherEmail: session.user.email },
+    select: { id: true },
+  });
+  if (!listing) {
+    return { ok: false, message: "אין הרשאה." };
+  }
+
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: { isRented: true, published: false },
+  });
+
+  revalidatePath(`/listings/${listingId}`);
+  revalidatePath("/listings");
+  return { ok: true, message: "✅ הדירה סומנה כמושכרת." };
 }

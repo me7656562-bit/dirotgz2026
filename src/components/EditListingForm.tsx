@@ -6,17 +6,16 @@ import Link from "next/link";
 import { updateListingAction, type ListingFormState } from "@/app/actions/listings";
 import { Toggle } from "@/components/Toggle";
 import { Num } from "@/components/Num";
-import { ImageUpload } from "@/components/ImageUpload";
+import { ImageUpload, type UploadedImage } from "@/components/ImageUpload";
 import { 
   type WalkDistance,
-  clampInt,
   computeShavuot5786Total,
 } from "@/lib/pricing/shavuot5786StolinKarlin";
 import { btnPrimary, btnSecondary, inputClass, labelClass, selectClass } from "@/lib/uiStyles";
-import type { Listing } from "@/generated/prisma/models";
+import type { ListingModel } from "@/generated/prisma/models";
 
 type Props = {
-  listing: Listing & { images?: { url: string }[] };
+  listing: ListingModel & { images?: { url: string; publicId?: string | null }[] };
 };
 
 export function EditListingForm({ listing }: Props) {
@@ -24,19 +23,19 @@ export function EditListingForm({ listing }: Props) {
   
   const [state, formAction] = useActionState<ListingFormState, FormData>(
     updateListingAction, 
-    { ok: true, message: "" }
+    null
   );
 
-  const [uploadedImages, setUploadedImages] = useState<string[]>(
-    listing.images?.map(img => img.url) || []
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>(
+    listing.images?.map((img) => ({ url: img.url, publicId: img.publicId ?? "" })) ?? []
   );
+  const uploadedUrls = uploadedImages.map((img) => img.url);
 
-  // redirect after success
   useEffect(() => {
-    if (state.ok && state.message && !state.message.includes("שגיאה")) {
-      router.push(`/listings/${listing.id}`);
+    if (state?.ok && state.listingId) {
+      router.push(`/listings/${state.listingId}`);
     }
-  }, [state, router, listing.id]);
+  }, [state, router]);
 
   // State variables populated with existing listing data
   const [title, setTitle] = useState(listing.title);
@@ -88,17 +87,17 @@ export function EditListingForm({ listing }: Props) {
     );
   }, [totalBeds, walkDistance, rooms, ac, mattresses, renterMattresses]);
 
-  const handleImageChange = useCallback((newImages: string[]) => {
-    setUploadedImages(newImages);
+  const handleImageChange = useCallback((imgs: UploadedImage[]) => {
+    setUploadedImages(imgs);
   }, []);
 
   return (
     <form action={formAction} className="space-y-6">
       {/* Hidden field for listing ID */}
       <input type="hidden" name="listingId" value={listing.id} />
-      <input type="hidden" name="uploadedImages" value={JSON.stringify(uploadedImages)} />
+      <input type="hidden" name="uploadedImages" value={JSON.stringify(uploadedUrls)} />
 
-      {state.message && (
+      {state?.message && (
         <div className={`rounded-2xl px-4 py-3 text-sm ${
           state.ok 
             ? "bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/40 dark:text-green-200 dark:border-green-800/40"
@@ -212,11 +211,7 @@ export function EditListingForm({ listing }: Props) {
           <p className="text-sm font-bold text-white">📸 תמונות</p>
         </div>
         <div className="p-5">
-          <ImageUpload 
-            images={uploadedImages}
-            onChange={handleImageChange}
-            maxImages={6}
-          />
+          <ImageUpload onChange={handleImageChange} maxFiles={6} />
         </div>
       </section>
 
