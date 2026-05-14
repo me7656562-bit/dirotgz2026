@@ -119,7 +119,6 @@ export async function createListingAction(
 
   const listing = await prisma.listing.create({
     data: {
-    data: {
       code,
       title,
       description: description ?? "",
