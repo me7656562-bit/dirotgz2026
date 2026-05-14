@@ -45,7 +45,7 @@ export async function createListingAction(
 
   const title = String(formData.get("title") ?? "").trim();
   const description = getStr(formData, "description");
-  const city = String(formData.get("city") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim() || "גבעת זאב";
   const neighborhood = getStr(formData, "neighborhood");
   const address = getStr(formData, "address");
   const floor = getInt(formData, "floor");
@@ -69,8 +69,9 @@ export async function createListingAction(
   const chairs = getStr(formData, "chairs");
   const walkRaw = String(formData.get("walkDistance") ?? "");
   const walkDistance = parseWalkDistance(walkRaw);
-  const availableFrom = parseDateOnly(String(formData.get("availableFrom") ?? ""));
-  const availableTo = parseDateOnly(String(formData.get("availableTo") ?? ""));
+  // תאריכי שבועות תשפ"ו — ברירת מחדל אם לא הוזנו
+  const availableFrom = parseDateOnly(String(formData.get("availableFrom") ?? "")) ?? new Date("2025-06-01T00:00:00Z");
+  const availableTo = parseDateOnly(String(formData.get("availableTo") ?? "")) ?? new Date("2025-06-03T23:59:59Z");
   const askingRaw = String(formData.get("askingPriceNis") ?? "").trim();
   const askingPriceNis =
     askingRaw === "" ? null : Number.isFinite(Number(askingRaw)) ? Math.round(Number(askingRaw)) : null;
@@ -79,7 +80,6 @@ export async function createListingAction(
   const imageUrl = getStr(formData, "imageUrl");
 
   if (title.length < 3) return { ok: false, message: "כותרת קצרה מדי (לפחות 3 תווים)." };
-  if (!city) return { ok: false, message: "יש למלא עיר." };
   if (!Number.isInteger(rooms) || rooms < 1 || rooms > 30) {
     return { ok: false, message: "מספר חדרים לא תקין." };
   }
@@ -87,9 +87,6 @@ export async function createListingAction(
     return { ok: false, message: "מספר מיטות לא תקין." };
   }
   if (!walkDistance) return { ok: false, message: "יש לבחור קטגוריית מרחק." };
-  if (!availableFrom || !availableTo || availableFrom > availableTo) {
-    return { ok: false, message: "טווח תאריכים לא תקין." };
-  }
   if (!contactPhone || contactPhone.length < 8) {
     return { ok: false, message: "יש למלא מספר טלפון ליצירת קשר." };
   }
