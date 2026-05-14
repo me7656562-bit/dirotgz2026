@@ -3,14 +3,11 @@
 import { useActionState, useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createListingAction, saveListingImagesAction } from "@/app/actions/listings";
-import { CloudinaryUpload } from "@/components/CloudinaryUpload";
+import { ImageUpload } from "@/components/ImageUpload";
 import { SYNAGOGUE_ADDRESS_HE } from "@/lib/synagogue";
 import { computeShavuot5786Total } from "@/lib/pricing/shavuot5786StolinKarlin";
 import type { WalkDistance } from "@/lib/pricing/shavuot5786StolinKarlin";
 import { btnPrimary, hintClass, inputClass, labelClass, selectClass } from "@/lib/uiStyles";
-
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "";
 
 /* ─── Toggle card ─── */
 function Toggle({
@@ -264,22 +261,17 @@ export function NewListingForm() {
       )}
 
       {/* ── תמונות ── */}
-      {CLOUD_NAME && UPLOAD_PRESET && (
-        <section className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm dark:border-stone-700/80 dark:bg-stone-900">
-          <div className="bg-gradient-to-l from-pink-500 to-rose-500 px-5 py-2.5">
-            <p className="text-sm font-bold text-white">📷 תמונות הדירה</p>
-          </div>
-          <div className="p-5">
-            <CloudinaryUpload
-              cloudName={CLOUD_NAME}
-              uploadPreset={UPLOAD_PRESET}
-              onUploaded={setUploadedImages}
-              maxFiles={6}
-            />
-            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">עד 6 תמונות · התמונה הראשונה תוצג בכרטיס המודעה</p>
-          </div>
-        </section>
-      )}
+      <section className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm dark:border-stone-700/80 dark:bg-stone-900">
+        <div className="bg-gradient-to-l from-pink-500 to-rose-500 px-5 py-2.5">
+          <p className="text-sm font-bold text-white">📷 תמונות הדירה</p>
+        </div>
+        <div className="p-5">
+          <ImageUpload onChange={setUploadedImages} maxFiles={6} />
+          <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+            התמונה הראשונה תוצג בכרטיס המודעה ברשימה
+          </p>
+        </div>
+      </section>
 
       {/* ── קשר ── */}
       <section className="overflow-hidden rounded-3xl border border-stone-200/80 bg-white shadow-sm dark:border-stone-700/80 dark:bg-stone-900">
