@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-// import { prisma } from "@/lib/db"; // Disabled for mock mode
+import { prisma } from "@/lib/db";
 import { parseWalkDistance } from "@/lib/listingLabels";
 
 /** שמור תמונות Cloudinary למודעה קיימת */
@@ -10,9 +10,17 @@ export async function saveListingImagesAction(
   listingId: string,
   images: { url: string; publicId: string }[]
 ): Promise<void> {
-  // Mock implementation for development
-  console.log("Mock: Saving", images.length, "images for listing", listingId);
-  // revalidatePath(`/listings/${listingId}`);
+  if (!images.length) return;
+  await prisma.listingImage.createMany({
+    data: images.map((img, i) => ({
+      listingId,
+      url: img.url,
+      publicId: img.publicId,
+      order: i,
+    })),
+    skipDuplicates: true,
+  });
+  revalidatePath(`/listings/${listingId}`);
 }
 
 export type ListingFormState =
@@ -109,8 +117,8 @@ export async function createListingAction(
     return { ok: false, message: "מחיר מבוקש לא סביר." };
   }
 
-  // Mock implementation - would normally create in database
-  console.log("Mock: Creating listing with data:", {
+  const listing = await prisma.listing.create({
+    data: {
     data: {
       code,
       title,
@@ -153,8 +161,7 @@ export async function createListingAction(
 
   revalidatePath("/listings");
   // מחזיר את ה-ID כדי שהלקוח יוכל להעלות תמונות ואז לעשות redirect
-  const mockId = "mock-" + Date.now().toString();
-  return { ok: true, listingId: mockId };
+  return { ok: true, listingId: listing.id };
 }
 
 export async function updateListingAction(
@@ -171,8 +178,15 @@ export async function updateListingAction(
     return { ok: false, message: "מזהה מודעה חסר." };
   }
 
-  // Mock implementation for development
-  console.log("Mock: Updating listing", listingId);
+  // בדיקת בעלות
+  const existingListing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: { publisherEmail: true }
+  });
+
+  if (!existingListing || existingListing.publisherEmail !== session.user.email) {
+    return { ok: false, message: "אין הרשאה לערוך מודעה זו." };
+  }
 
   const title = String(formData.get("title") ?? "").trim();
   const description = getStr(formData, "description");
@@ -218,8 +232,62 @@ export async function updateListingAction(
   if (!walkDistance) return { ok: false, message: "יש לבחור מרחק הליכה." };
   if (contactPhone.length < 8) return { ok: false, message: "טלפון קצר מדי." };
 
-  revalidatePath(`/listings/${listingId}`);
-  revalidatePath("/listings");
+  try {
+    await prisma.$transaction(async (tx) => {
+      // עדכון המודעה
+      await tx.listing.update({
+        where: { id: listingId },
+        data: {
+          title,
+          description: description ?? "",
+          neighborhood,
+          address,
+          floor,
+          rooms,
+          roomsClosed,
+          bedsDouble,
+          bedsJewish,
+          mattresses,
+          cribs,
+          sofa,
+          bedLinens,
+          ac,
+          shabbatPlate,
+          shabbatUrnBoiler,
+          shabbatClock,
+          kosherKitchen,
+          bathrooms,
+          chairsCount,
+          balconyType,
+          balconySize,
+          livingRoomSize,
+          diningTable,
+          walkDistance,
+          askingPriceNis: askingPriceNis ?? undefined,
+          contactPhone,
+          contactWhatsapp,
+        }
+      });
 
-  return { ok: true, message: "המודעה עודכנה בהצלחה! (מצב דמו)" };
+      // עדכון תמונות
+      await tx.listingImage.deleteMany({ where: { listingId } });
+      if (uploadedImages.length > 0) {
+        await tx.listingImage.createMany({
+          data: uploadedImages.map((url, i) => ({
+            listingId,
+            url,
+            order: i,
+          })),
+        });
+      }
+    });
+
+    revalidatePath(`/listings/${listingId}`);
+    revalidatePath("/listings");
+
+    return { ok: true, message: "המודעה עודכנה בהצלחה!" };
+  } catch (error) {
+    console.error("Error updating listing:", error);
+    return { ok: false, message: "שגיאה בעדכון המודעה. נסה שוב." };
+  }
 }

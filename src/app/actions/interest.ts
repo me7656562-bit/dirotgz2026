@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { mockListings, mockInterests } from "@/lib/mockData";
+import { prisma } from "@/lib/db";
 
 export type ActionResult = { ok: boolean; message: string };
 
@@ -16,35 +16,58 @@ export async function markInterestAction(
     return { ok: false, message: "יש להתחבר כדי לסמן עניין." };
   }
 
-  const listing = mockListings.find(l => l.id === listingId && l.published);
+  const listing = await prisma.listing.findFirst({
+    where: { id: listingId, published: true },
+    select: { id: true, title: true, contactPhone: true, publisherEmail: true },
+  });
   if (!listing) return { ok: false, message: "מודעה לא נמצאה." };
 
-  // Mock implementation - would normally save to database
-  console.log("Mock: User", session.user.email, "interested in listing", listingId);
-  
+  const phone = (data.phone ?? "").trim().slice(0, 30) || null;
+  const message = (data.message ?? "").trim().slice(0, 500) || null;
+
+  await prisma.interest.upsert({
+    where: { listingId_email: { listingId, email: session.user.email } },
+    update: { phone: phone ?? undefined, message: message ?? undefined },
+    create: {
+      listingId,
+      email: session.user.email,
+      name: session.user.name ?? undefined,
+      phone: phone ?? undefined,
+      message: message ?? undefined,
+    },
+  });
+
   revalidatePath(`/listings/${listingId}`);
-  return { ok: true, message: "✅ סומן! המשכיר יראה את הפרטים שלך. (מצב דמו)" };
+  return { ok: true, message: "✅ סומן! המשכיר יראה את הפרטים שלך." };
 }
 
 /** בדיקה אם המשתמש כבר מעוניין + ספירה */
 export async function getInterestInfo(listingId: string, userEmail?: string) {
-  // Mock implementation
-  const userInterested = userEmail ? 
-    mockInterests.some(i => i.listingId === listingId && i.email === userEmail) : 
-    false;
-  
-  const count = mockInterests.filter(i => i.listingId === listingId).length;
-  
-  return { userInterested, count };
+  const [userInterest, count] = await Promise.all([
+    userEmail ? prisma.interest.findFirst({
+      where: { listingId, email: userEmail },
+      select: { id: true },
+    }) : null,
+    prisma.interest.count({ where: { listingId } }),
+  ]);
+
+  return {
+    userInterested: Boolean(userInterest),
+    count,
+  };
 }
 
 /** המשכיר רואה רשימת כל המעוניינים */
 export async function getInterestedListForOwner(listingId: string, ownerEmail: string) {
-  // Mock implementation - only return if user is the owner
-  const listing = mockListings.find(l => l.id === listingId);
-  if (!listing || listing.publisherEmail !== ownerEmail) {
-    return [];
-  }
+  const listing = await prisma.listing.findFirst({
+    where: { id: listingId, publisherEmail: ownerEmail },
+    select: { id: true },
+  });
   
-  return mockInterests.filter(i => i.listingId === listingId);
+  if (!listing) return [];
+
+  return prisma.interest.findMany({
+    where: { listingId },
+    orderBy: { createdAt: "desc" },
+  });
 }

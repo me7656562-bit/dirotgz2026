@@ -1,27 +1,33 @@
 import type { WalkDistance } from "@prisma/client";
-import { mockListings, type MockListing } from "@/lib/mockData";
+import { prisma } from "@/lib/db";
 
 export type ListingSearch = {
   walkDistance?: WalkDistance;
   minBeds?: number;
 };
 
-export async function findPublishedListings(filters: ListingSearch): Promise<MockListing[]> {
+export async function findPublishedListings(filters: ListingSearch) {
   const { walkDistance, minBeds } = filters;
 
-  // Mock implementation for development
-  return mockListings.filter(listing => {
-    if (!listing.published || listing.isRented) return false;
-    if (walkDistance && listing.walkDistance !== walkDistance) return false;
-    if (minBeds) {
-      const totalBeds = (listing.bedsDouble || 0) + (listing.bedsJewish || 0);
-      if (totalBeds < minBeds) return false;
-    }
-    return true;
+  return prisma.listing.findMany({
+    where: {
+      published: true,
+      isRented: false,
+      ...(walkDistance ? { walkDistance } : {}),
+      ...(minBeds ? { beds: { gte: minBeds } } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      images: { orderBy: { order: "asc" }, take: 1 },
+    },
   });
 }
 
-export async function getListingById(id: string): Promise<MockListing | null> {
-  // Mock implementation for development
-  return mockListings.find(listing => listing.id === id) || null;
+export async function getListingById(id: string) {
+  return prisma.listing.findFirst({
+    where: { id },
+    include: {
+      images: { orderBy: { order: "asc" } },
+    },
+  });
 }
