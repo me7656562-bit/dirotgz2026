@@ -1,4 +1,4 @@
-import type { WalkDistance } from "@prisma/client";
+import type { WalkDistance } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
 
 export type ListingSearch = {

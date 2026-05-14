@@ -13,7 +13,7 @@ import {
   computeShavuot5786Total,
 } from "@/lib/pricing/shavuot5786StolinKarlin";
 import { btnPrimary, btnSecondary, inputClass, labelClass, selectClass } from "@/lib/uiStyles";
-import type { Listing } from "@prisma/client";
+import type { Listing } from "@/generated/prisma/models";
 
 type Props = {
   listing: Listing & { images?: { url: string }[] };
