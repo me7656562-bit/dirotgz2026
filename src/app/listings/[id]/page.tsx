@@ -9,6 +9,9 @@ import { getListingById } from "@/lib/listings";
 import { walkDistanceLabel } from "@/lib/listingLabels";
 import { SYNAGOGUE_ADDRESS_HE, SYNAGOGUE_ADDRESS_QUERY } from "@/lib/synagogue";
 import { breadcrumbLink, btnPrimary, btnSecondary, cardClass } from "@/lib/uiStyles";
+import { auth } from "@/auth";
+import { getInterestInfo } from "@/app/actions/interest";
+import { InterestButton, MarkRentedButton } from "@/components/InterestButton";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -55,6 +58,11 @@ export default async function ListingDetailPage({ params }: Props) {
   const { id } = await params;
   const listing = await getListingById(id);
   if (!listing) notFound();
+
+  const session = await auth();
+  const userEmail = session?.user?.email ?? null;
+  const isOwner = userEmail === listing.publisherEmail;
+  const { count: interestCount, isMine: alreadyInterested } = await getInterestInfo(id, userEmail);
 
   const mapsUrl = listing.address
     ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(SYNAGOGUE_ADDRESS_QUERY)}&destination=${encodeURIComponent(`${listing.address}, ${listing.city}`)}&travelmode=walking`
@@ -203,8 +211,39 @@ export default async function ListingDetailPage({ params }: Props) {
           </div>
         </div>
 
+        {/* מעוניין / הושכרה */}
+        <div className="rounded-2xl border border-stone-200/60 bg-stone-50/70 p-5 dark:border-stone-700/60 dark:bg-stone-800/40">
+          {listing.isRented ? (
+            <p className="rounded-xl bg-green-100 px-4 py-3 text-center font-bold text-green-800 dark:bg-green-950/50 dark:text-green-200">
+              🔑 הדירה הושכרה
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {userEmail && !isOwner && (
+                <InterestButton listingId={listing.id} isMine={alreadyInterested} count={interestCount} />
+              )}
+              {isOwner && (
+                <>
+                  {interestCount > 0 && (
+                    <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+                      📬 {interestCount} {interestCount === 1 ? "מתעניין מחכה" : "מתעניינים מחכים"} לתשובתך
+                    </p>
+                  )}
+                  <MarkRentedButton listingId={listing.id} />
+                </>
+              )}
+              {!userEmail && (
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  <Link href="/api/auth/signin" className="font-semibold text-teal-700 underline dark:text-teal-400">התחברו</Link>
+                  {" "}כדי לסמן מעוניין
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* כפתורים */}
-        <div className="flex flex-wrap gap-3 border-t border-stone-200/80 pt-6 dark:border-stone-700/80">
+        <div className="flex flex-wrap gap-3 border-t border-stone-200/80 pt-4 dark:border-stone-700/80">
           <Link
             href={`/simulator?beds=${listing.beds}&rooms=${listing.rooms}&distance=${listing.walkDistance}`}
             className={btnPrimary}

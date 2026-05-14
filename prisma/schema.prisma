@@ -67,8 +67,22 @@ model Listing {
   contactWhatsapp  String?
 
   published        Boolean  @default(true)
+  isRented         Boolean  @default(false) /// סומן כמושכר
   /// מי פרסם (אימות Google)
   publisherEmail   String?
+
+  interests        Interest[]
+}
+
+model Interest {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId   String
+  email       String   /// מייל המתעניין
+  name        String?  /// שם (אופציונלי)
+
+  @@unique([listingId, email])
 }
 
 enum WalkDistance {

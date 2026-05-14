@@ -2,25 +2,14 @@ import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { parseWalkDistance, walkDistanceLabel } from "@/lib/listingLabels";
 import { findPublishedListings } from "@/lib/listings";
-import { breadcrumbLink, btnPrimary, btnSecondary, hintClass, inputClass, labelClass, selectClass } from "@/lib/uiStyles";
+import { btnPrimary, btnSecondary, selectClass, labelClass } from "@/lib/uiStyles";
 
 export const metadata = {
-  title: "מודעות דירות",
-  description: "דירות להשכרה לחגים — לוח מודעות",
+  title: "מודעות דירות — שבועות תשפ״ו",
+  description: "דירות להשכרה לשבועות תשפ״ו — לוח מודעות גבעת זאב",
 };
 
-type SearchParams = {
-  city?: string;
-  walk?: string;
-  from?: string;
-  to?: string;
-};
-
-function parseYmd(s: string | undefined): Date | undefined {
-  if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return undefined;
-  const d = new Date(`${s}T12:00:00.000Z`);
-  return Number.isNaN(d.getTime()) ? undefined : d;
-}
+type SearchParams = { walk?: string; beds?: string };
 
 export default async function ListingsPage({
   searchParams,
@@ -28,94 +17,96 @@ export default async function ListingsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const city = sp.city?.trim() || undefined;
   const walkDistance = parseWalkDistance(sp.walk) ?? undefined;
-  const availableFrom = parseYmd(sp.from);
-  const availableTo = parseYmd(sp.to);
+  const minBeds = sp.beds ? Math.max(1, Number(sp.beds) || 1) : undefined;
 
-  const listings = await findPublishedListings({
-    city,
-    walkDistance,
-    ...(availableFrom && availableTo ? { availableFrom, availableTo } : {}),
-  });
+  const listings = await findPublishedListings({ walkDistance, minBeds });
+
+  const hasFilter = !!(walkDistance || minBeds);
 
   return (
-    <div className="px-4 pb-16 pt-8 sm:pt-10">
-      <div className="mx-auto max-w-2xl space-y-8">
-        <nav className="text-sm">
-          <Link href="/" className={breadcrumbLink}>
-            דף הבית
-          </Link>
-        </nav>
+    <div className="min-h-screen bg-gradient-to-b from-teal-50/60 via-white to-stone-50 dark:from-teal-950/30 dark:via-stone-950 dark:to-stone-950">
+      <div className="mx-auto max-w-2xl px-4 pb-20 pt-8">
 
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-50">מודעות דירות</h1>
-            <p className="text-stone-600 dark:text-stone-400">חיפוש לפי עיר, מרחק ותאריכי זמינות</p>
+        {/* כותרת */}
+        <div className="mb-8 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-teal-100 px-4 py-1.5 text-sm font-semibold text-teal-800 dark:bg-teal-900/60 dark:text-teal-200">
+            🏡 שבועות תשפ״ו · גבעת זאב
           </div>
-          <Link href="/listings/new" className={`${btnPrimary} shrink-0 shadow-md shadow-teal-700/20`}>
-            + פרסום מודעה
-          </Link>
+          <h1 className="text-3xl font-black tracking-tight text-stone-900 dark:text-stone-50 sm:text-4xl">
+            לוח מודעות דירות
+          </h1>
+          <p className="mt-2 text-stone-500 dark:text-stone-400">מצא את הדירה המתאימה לחג</p>
         </div>
 
+        {/* טופס חיפוש */}
         <form
-          className="space-y-4 rounded-2xl border border-stone-200/90 bg-white/90 p-5 shadow-sm dark:border-stone-700/90 dark:bg-stone-900/70 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-4 sm:space-y-0"
           method="get"
           action="/listings"
+          className="mb-8 overflow-hidden rounded-3xl border border-teal-200/80 bg-white shadow-lg shadow-teal-100/50 dark:border-teal-800/50 dark:bg-stone-900 dark:shadow-teal-900/20"
         >
-          <div className="sm:col-span-2">
-            <label className={labelClass} htmlFor="city">
-              עיר (חיפוש חלקי)
-            </label>
-            <input
-              id="city"
-              name="city"
-              defaultValue={city ?? ""}
-              placeholder="למשל: גבעת זאב"
-              className={inputClass}
-            />
+          <div className="bg-gradient-to-l from-teal-600 to-teal-700 px-5 py-3">
+            <p className="text-sm font-bold text-white">🔍 מצא לי התאמה</p>
           </div>
-          <div>
-            <label className={labelClass} htmlFor="walk">
-              מרחק מבית הכנסת
-            </label>
-            <select id="walk" name="walk" defaultValue={walkDistance ?? ""} className={selectClass}>
-              <option value="">הכל</option>
-              <option value="upTo10">{walkDistanceLabel("upTo10")}</option>
-              <option value="upTo20">{walkDistanceLabel("upTo20")}</option>
-              <option value="over20">{walkDistanceLabel("over20")}</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4 p-5">
             <div>
-              <label className={labelClass} htmlFor="from">
-                זמינות מתאריך
-              </label>
-              <input id="from" name="from" type="date" defaultValue={sp.from ?? ""} className={inputClass} />
+              <label className={labelClass} htmlFor="walk">מרחק מבית הכנסת</label>
+              <select id="walk" name="walk" defaultValue={walkDistance ?? ""} className={selectClass}>
+                <option value="">כל המרחקים</option>
+                <option value="upTo10">{walkDistanceLabel("upTo10")}</option>
+                <option value="upTo20">{walkDistanceLabel("upTo20")}</option>
+                <option value="over20">{walkDistanceLabel("over20")}</option>
+              </select>
             </div>
             <div>
-              <label className={labelClass} htmlFor="to">
-                עד תאריך
-              </label>
-              <input id="to" name="to" type="date" defaultValue={sp.to ?? ""} className={inputClass} />
+              <label className={labelClass} htmlFor="beds">מינימום מיטות</label>
+              <select id="beds" name="beds" defaultValue={sp.beds ?? ""} className={selectClass}>
+                <option value="">לא משנה</option>
+                {[2, 3, 4, 5, 6, 7, 8, 10].map((n) => (
+                  <option key={n} value={n}>{n}+ מיטות</option>
+                ))}
+              </select>
             </div>
           </div>
-          <p className={`${hintClass} sm:col-span-2`}>מודעה תוצג אם יש חפיפה בין טווח הזמינות שלה לבין התאריכים שבחרתם.</p>
-          <div className="flex flex-wrap items-center gap-2 sm:col-span-2">
-            <button type="submit" className={btnPrimary}>
-              חיפוש
+          <div className="flex gap-3 border-t border-stone-100 px-5 pb-5 pt-3 dark:border-stone-800">
+            <button type="submit" className={`${btnPrimary} flex-1`}>
+              חפש התאמות
             </button>
-            <Link href="/listings" className={btnSecondary}>
-              ניקוי סינון
-            </Link>
+            {hasFilter && (
+              <Link href="/listings" className={btnSecondary}>
+                נקה
+              </Link>
+            )}
           </div>
         </form>
 
-        {listings.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-white/60 p-10 text-center dark:border-stone-600 dark:bg-stone-900/40">
-            <p className="text-stone-600 dark:text-stone-400">אין מודעות שתואמות את החיפוש.</p>
+        {/* תוצאות */}
+        {hasFilter && (
+          <div className={`mb-5 rounded-2xl px-5 py-3 text-sm font-semibold ${
+            listings.length > 0
+              ? "bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-200"
+              : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+          }`}>
+            {listings.length > 0
+              ? `🎉 מצאנו לך ${listings.length} ${listings.length === 1 ? "התאמה" : "התאמות"}!`
+              : "😔 לא נמצאו דירות מתאימות — נסה להרחיב את החיפוש"}
+          </div>
+        )}
+
+        {/* כפתור פרסום */}
+        <div className="mb-6 flex justify-end">
+          <Link href="/listings/new" className={`${btnPrimary} shadow-md shadow-teal-700/20`}>
+            + פרסם מודעה
+          </Link>
+        </div>
+
+        {listings.length === 0 && !hasFilter ? (
+          <div className="rounded-3xl border-2 border-dashed border-teal-200 bg-white/60 p-12 text-center dark:border-teal-800/50 dark:bg-stone-900/40">
+            <p className="text-4xl">🏠</p>
+            <p className="mt-3 text-lg font-bold text-stone-700 dark:text-stone-300">אין מודעות עדיין</p>
+            <p className="mt-1 text-sm text-stone-500">היה הראשון לפרסם!</p>
             <Link href="/listings/new" className={`${btnPrimary} mt-5 inline-flex`}>
-              פרסום המודעה הראשונה
+              פרסום מודעה ראשונה
             </Link>
           </div>
         ) : (
