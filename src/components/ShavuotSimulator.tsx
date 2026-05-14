@@ -18,13 +18,13 @@ function Num({
 }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-sm font-medium text-stone-700 dark:text-stone-300">{label}</span>
-      <div className="flex items-center gap-2">
+      <span className="text-sm font-medium text-stone-700 dark:text-stone-300 tiny:text-xs">{label}</span>
+      <div className="flex items-center gap-2 tiny:gap-1.5">
         <button type="button" onClick={() => onChange(Math.max(min, value - 1))}
-          className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-stone-200 bg-white font-bold text-stone-700 hover:border-teal-400 hover:text-teal-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">−</button>
-        <span className="w-8 text-center text-lg font-black tabular-nums text-stone-900 dark:text-stone-50">{value}</span>
+          className="flex h-8 w-8 tiny:h-10 tiny:w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white font-bold text-stone-700 hover:border-teal-400 hover:text-teal-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 active:scale-95 transition">−</button>
+        <span className="w-8 tiny:w-10 text-center text-lg tiny:text-xl font-black tabular-nums text-stone-900 dark:text-stone-50">{value}</span>
         <button type="button" onClick={() => onChange(Math.min(max, value + 1))}
-          className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-stone-200 bg-white font-bold text-stone-700 hover:border-teal-400 hover:text-teal-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">+</button>
+          className="flex h-8 w-8 tiny:h-10 tiny:w-10 items-center justify-center rounded-xl border-2 border-stone-200 bg-white font-bold text-stone-700 hover:border-teal-400 hover:text-teal-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 active:scale-95 transition">+</button>
       </div>
     </div>
   );

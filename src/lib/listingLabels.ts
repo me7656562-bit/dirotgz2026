@@ -1,4 +1,4 @@
-import type { WalkDistance } from "@/generated/prisma/enums";
+import type { WalkDistance } from "@prisma/client";
 
 const walkDistanceHe: Record<WalkDistance, string> = {
   upTo10: "עד 10 דקות הליכה מבית הכנסת",

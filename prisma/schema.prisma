@@ -13,6 +13,7 @@ model Listing {
   id               String   @id @default(cuid())
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  code             String?  /// קוד רנדומלי 4 ספרות
 
   // --- כותרת ותיאור ---
   title            String
@@ -29,7 +30,8 @@ model Listing {
   walkDistance     WalkDistance
 
   // --- שינה ---
-  rooms            Int       /// חדרים סגורים
+  rooms            Int       /// סה"כ חדרים
+  roomsClosed      Int?      /// חדרים סגורים
   beds             Int       /// סה"כ מיטות
   bedsDouble       Int?      /// מיטות זוגיות
   bedsJewish       Int?      /// מיטות יהודיות (נפרדות)
@@ -43,6 +45,7 @@ model Listing {
   shabbatPlate     Boolean   @default(false) /// פלטה לשבת
   shabbatUrnBoiler Boolean   @default(false) /// מיחם שבת
   shabbatClock     Boolean   @default(false) /// שעון שבת
+  kosherKitchen    Boolean   @default(false) /// מטבח כשר
 
   // --- שירותים ומרפסת ---
   bathrooms        Int?      /// מספר שירותים/חדרי רחצה
@@ -52,7 +55,8 @@ model Listing {
   // --- סלון ואוכל ---
   livingRoomSize   String?   /// גודל סלון: גדול / בינוני / קטן
   diningTable      String?   /// שולחן: מטבח / רגיל / אין
-  chairs           String?   /// כסאות: סוג וכמות
+  chairs           String?   /// כסאות: סוג וכמות (ישן)
+  chairsCount      Int?      /// מספר כסאות
 
   // --- מחיר ותמונה ---
   askingPriceNis   Int?

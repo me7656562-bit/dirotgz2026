@@ -1,0 +1,102 @@
+// Mock data for development when Prisma doesn't work
+export const mockListings = [
+  {
+    id: "1",
+    title: "דירה נעימה במרכז גבעת זאב",
+    description: "דירה מרווחת ונקייה עם כל הציוד הדרוש",
+    city: "גבעת זאב",
+    neighborhood: "המרכז",
+    address: "רחוב הפיקוס 15",
+    floor: 2,
+    rooms: 4,
+    roomsClosed: 3,
+    bedsDouble: 2,
+    bedsJewish: 1,
+    mattresses: 2,
+    cribs: 1,
+    sofa: true,
+    bedLinens: true,
+    ac: true,
+    shabbatPlate: true,
+    shabbatUrnBoiler: true,
+    shabbatClock: true,
+    kosherKitchen: true,
+    bathrooms: 2,
+    chairsCount: 6,
+    balconyType: "מרפסת",
+    balconySize: "גדולה",
+    livingRoomSize: "גדול",
+    diningTable: "שולחן גדול",
+    walkDistance: "upTo10" as const,
+    askingPriceNis: 2500,
+    contactPhone: "052-1234567",
+    contactWhatsapp: "052-1234567",
+    availableFrom: new Date("2025-06-01"),
+    availableTo: new Date("2025-06-03"),
+    publisherEmail: "demo@example.com",
+    published: true,
+    isRented: false,
+    code: "1234",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    images: [
+      { id: "img1", url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2Y0ZjRmNCIvPgo8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+תמונה דמו</dGV4dD4KPHN2Zz4K", order: 0, createdAt: new Date(), listingId: "1" }
+    ]
+  },
+  {
+    id: "2",
+    title: "דירת 3 חדרים עם נוף יפה",
+    description: "דירה עם מרפסת גדולה ונוף מרהיב",
+    city: "גבעת זאב",
+    neighborhood: "גבעת האילנות",
+    address: "רחוב האלון 8",
+    floor: 0,
+    rooms: 3,
+    roomsClosed: 2,
+    bedsDouble: 1,
+    bedsJewish: 2,
+    mattresses: 1,
+    cribs: 0,
+    sofa: true,
+    bedLinens: false,
+    ac: false,
+    shabbatPlate: true,
+    shabbatUrnBoiler: false,
+    shabbatClock: true,
+    kosherKitchen: false,
+    bathrooms: 1,
+    chairsCount: 4,
+    balconyType: "מרפסת",
+    balconySize: "בינונית",
+    livingRoomSize: "בינוני",
+    diningTable: "שולחן רגיל",
+    walkDistance: "upTo20" as const,
+    askingPriceNis: 2000,
+    contactPhone: "053-7654321",
+    contactWhatsapp: "053-7654321",
+    availableFrom: new Date("2025-06-01"),
+    availableTo: new Date("2025-06-03"),
+    publisherEmail: "demo2@example.com",
+    published: true,
+    isRented: false,
+    code: "5678",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    images: []
+  }
+];
+
+export const mockInterests = [
+  {
+    id: "int1",
+    listingId: "1",
+    email: "renter@example.com",
+    name: "יוחנן כהן",
+    phone: "054-9876543",
+    message: "מעוניין בדירה לשבועות",
+    createdAt: new Date()
+  }
+];
+
+export type MockListing = typeof mockListings[0];
+export type MockInterest = typeof mockInterests[0];

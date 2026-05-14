@@ -4,6 +4,8 @@
  * המקדמים לפי שורות (1)–(7) במסמך; סכום "חסר ציוד" הוא לפחות 100 ₪ — כאן 100 ₪ לפריט לוגי אחד (סימון אחד).
  */
 
+import { walkDistanceLabel } from "@/lib/listingLabels";
+
 export type WalkDistance = "upTo10" | "upTo20" | "over20";
 
 export type RoomBand = "upTo3" | "upTo4" | "fivePlus";
@@ -92,7 +94,16 @@ export function computeShavuot5786Total(
   flags: AdjustmentFlags
 ): Shavuot5786Computation {
   const { value: base, warnings: w1 } = computeBaseNis(beds, distance, rooms);
-  const lines: PriceLine[] = [{ label: "מחיר בסיס לפי טבלת התקנון", amount: base }];
+  
+  // שורת פירוט מפורטת
+  const distanceText = walkDistanceLabel(distance);
+  const totalMattresses = (flags.landlordMattresses || 0) + (flags.renterMattresses || 0);
+  const detailsLine = `${beds} מיטות, ${rooms} חדרים, ${distanceText}${totalMattresses > 0 ? `, ${totalMattresses} מזרונים` : ""}`;
+  
+  const lines: PriceLine[] = [
+    { label: detailsLine, amount: 0 },
+    { label: "מחיר בסיס לפי טבלת התקנון", amount: base }
+  ];
 
   if (flags.missingBasicItem) {
     lines.push({

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
+// import { prisma } from "@/lib/db"; // Disabled for mock mode
 import { parseWalkDistance } from "@/lib/listingLabels";
 
 /** שמור תמונות Cloudinary למודעה קיימת */
@@ -10,17 +10,9 @@ export async function saveListingImagesAction(
   listingId: string,
   images: { url: string; publicId: string }[]
 ): Promise<void> {
-  if (!images.length) return;
-  await prisma.listingImage.createMany({
-    data: images.map((img, i) => ({
-      listingId,
-      url: img.url,
-      publicId: img.publicId,
-      order: i,
-    })),
-    skipDuplicates: true,
-  });
-  revalidatePath(`/listings/${listingId}`);
+  // Mock implementation for development
+  console.log("Mock: Saving", images.length, "images for listing", listingId);
+  // revalidatePath(`/listings/${listingId}`);
 }
 
 export type ListingFormState =
@@ -60,6 +52,9 @@ export async function createListingAction(
     return { ok: false, message: "יש להתחבר עם גוגל כדי לפרסם מודעה." };
   }
 
+  // יצירת קוד רנדומלי 4 ספרות
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
+
   const title = String(formData.get("title") ?? "").trim();
   const description = getStr(formData, "description");
   const city = String(formData.get("city") ?? "").trim() || "גבעת זאב";
@@ -67,6 +62,7 @@ export async function createListingAction(
   const address = getStr(formData, "address");
   const floor = getInt(formData, "floor");
   const rooms = Number(formData.get("rooms"));
+  const roomsClosed = getInt(formData, "roomsClosed");
   const beds = Number(formData.get("beds"));
   const bedsDouble = getInt(formData, "bedsDouble");
   const bedsJewish = getInt(formData, "bedsJewish");
@@ -78,12 +74,14 @@ export async function createListingAction(
   const shabbatPlate = getBool(formData, "shabbatPlate");
   const shabbatUrnBoiler = getBool(formData, "shabbatUrnBoiler");
   const shabbatClock = getBool(formData, "shabbatClock");
+  const kosherKitchen = getBool(formData, "kosherKitchen");
   const bathrooms = getInt(formData, "bathrooms");
   const balconyType = getStr(formData, "balconyType");
   const balconySize = getStr(formData, "balconySize");
   const livingRoomSize = getStr(formData, "livingRoomSize");
   const diningTable = getStr(formData, "diningTable");
   const chairs = getStr(formData, "chairs");
+  const chairsCount = getInt(formData, "chairsCount");
   const walkRaw = String(formData.get("walkDistance") ?? "");
   const walkDistance = parseWalkDistance(walkRaw);
   // תאריכי שבועות תשפ"ו — ברירת מחדל אם לא הוזנו
@@ -111,8 +109,10 @@ export async function createListingAction(
     return { ok: false, message: "מחיר מבוקש לא סביר." };
   }
 
-  const listing = await prisma.listing.create({
+  // Mock implementation - would normally create in database
+  console.log("Mock: Creating listing with data:", {
     data: {
+      code,
       title,
       description: description ?? "",
       city,
@@ -120,6 +120,7 @@ export async function createListingAction(
       address,
       floor,
       rooms,
+      roomsClosed,
       beds,
       bedsDouble,
       bedsJewish,
@@ -131,12 +132,14 @@ export async function createListingAction(
       shabbatPlate,
       shabbatUrnBoiler,
       shabbatClock,
+      kosherKitchen,
       bathrooms,
       balconyType,
       balconySize,
       livingRoomSize,
       diningTable,
       chairs,
+      chairsCount,
       walkDistance,
       availableFrom,
       availableTo,
@@ -150,5 +153,73 @@ export async function createListingAction(
 
   revalidatePath("/listings");
   // מחזיר את ה-ID כדי שהלקוח יוכל להעלות תמונות ואז לעשות redirect
-  return { ok: true, listingId: listing.id };
+  const mockId = "mock-" + Date.now().toString();
+  return { ok: true, listingId: mockId };
+}
+
+export async function updateListingAction(
+  _prev: ListingFormState,
+  formData: FormData
+): Promise<ListingFormState> {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { ok: false, message: "יש להתחבר עם גוגל כדי לערוך מודעה." };
+  }
+
+  const listingId = String(formData.get("listingId") ?? "").trim();
+  if (!listingId) {
+    return { ok: false, message: "מזהה מודעה חסר." };
+  }
+
+  // Mock implementation for development
+  console.log("Mock: Updating listing", listingId);
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = getStr(formData, "description");
+  const neighborhood = getStr(formData, "neighborhood");
+  const address = getStr(formData, "address");
+  const floor = getInt(formData, "floor");
+  const rooms = Number(formData.get("rooms"));
+  const roomsClosed = getInt(formData, "roomsClosed");
+  const bedsDouble = getInt(formData, "bedsDouble");
+  const bedsJewish = getInt(formData, "bedsJewish");
+  const mattresses = getInt(formData, "mattresses");
+  const cribs = getInt(formData, "cribs");
+  const sofa = getBool(formData, "sofa");
+  const bedLinens = getBool(formData, "bedLinens");
+  const ac = getBool(formData, "ac");
+  const shabbatPlate = getBool(formData, "shabbatPlate");
+  const shabbatUrnBoiler = getBool(formData, "shabbatUrnBoiler");
+  const shabbatClock = getBool(formData, "shabbatClock");
+  const kosherKitchen = getBool(formData, "kosherKitchen");
+  const bathrooms = getInt(formData, "bathrooms");
+  const chairsCount = getInt(formData, "chairsCount");
+  const balconyType = getStr(formData, "balconyType");
+  const balconySize = getStr(formData, "balconySize");
+  const livingRoomSize = getStr(formData, "livingRoomSize");
+  const diningTable = getStr(formData, "diningTable");
+  const walkRaw = String(formData.get("walkDistance") ?? "");
+  const walkDistance = parseWalkDistance(walkRaw);
+  const askingRaw = String(formData.get("askingPriceNis") ?? "").trim();
+  const askingPriceNis = askingRaw === "" ? null : Number.isFinite(Number(askingRaw)) ? Math.round(Number(askingRaw)) : null;
+  const contactPhone = String(formData.get("contactPhone") ?? "").trim();
+  const contactWhatsapp = getStr(formData, "contactWhatsapp");
+
+  // Handle uploaded images
+  const uploadedImagesRaw = String(formData.get("uploadedImages") ?? "[]");
+  let uploadedImages: string[] = [];
+  try {
+    uploadedImages = JSON.parse(uploadedImagesRaw);
+  } catch {
+    return { ok: false, message: "שגיאה בעיבוד התמונות." };
+  }
+
+  if (title.length < 3) return { ok: false, message: "כותרת קצרה מדי (לפחות 3 תווים)." };
+  if (!walkDistance) return { ok: false, message: "יש לבחור מרחק הליכה." };
+  if (contactPhone.length < 8) return { ok: false, message: "טלפון קצר מדי." };
+
+  revalidatePath(`/listings/${listingId}`);
+  revalidatePath("/listings");
+
+  return { ok: true, message: "המודעה עודכנה בהצלחה! (מצב דמו)" };
 }

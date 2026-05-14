@@ -71,6 +71,7 @@ export function NewListingForm() {
   }, [state, router, uploadedImages]);
 
   const [rooms, setRooms] = useState(3);
+  const [roomsClosed, setRoomsClosed] = useState(2);
   const [beds, setBeds] = useState(4);
   const [bedsDouble, setBedsDouble] = useState(0);
   const [bedsJewish, setBedsJewish] = useState(0);
@@ -87,6 +88,8 @@ export function NewListingForm() {
   const [shabbatClock, setShabbatClock] = useState(false);
   const [sofa, setSofa] = useState(false);
   const [bedLinens, setBedLinens] = useState(false);
+  const [kosherKitchen, setKosherKitchen] = useState(false);
+  const [chairsCount, setChairsCount] = useState(0);
 
   const priceResult = useMemo(() => {
     if (!walkDistance) return null;
@@ -172,13 +175,14 @@ export function NewListingForm() {
         <div className="p-5">
           {/* מספרים — grid 2 עמודות */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-            <Num name="rooms" label="חדרים סגורים" value={rooms} onChange={setRooms} min={1} />
-            <Num name="beds" label="סה״כ מיטות" value={beds} onChange={setBeds} min={1} max={50} />
-            <Num name="bedsDouble" label="מיטות זוגיות" value={bedsDouble} onChange={setBedsDouble} />
+            <Num name="rooms" label="סה״כ חדרים" value={rooms} onChange={setRooms} min={1} />
+            <Num name="roomsClosed" label="חדרים סגורים" value={roomsClosed} onChange={setRoomsClosed} min={0} max={rooms} />
+            <Num name="bedsDouble" label="מיטות כפולות" value={bedsDouble} onChange={setBedsDouble} />
             <Num name="bedsJewish" label="מיטות יהודיות" value={bedsJewish} onChange={setBedsJewish} />
             <Num name="mattresses" label="מזרונים (משכיר)" value={mattresses} onChange={setMattresses} />
             <Num name="cribs" label="עריסות / לולים" value={cribs} onChange={setCribs} />
             <Num name="bathrooms" label="שירותים/אמבטיות" value={bathrooms} onChange={setBathrooms} min={1} />
+            <Num name="chairsCount" label="מספר כסאות" value={chairsCount} onChange={setChairsCount} />
           </div>
 
           {/* ציוד — 2 עמודות */}
@@ -189,6 +193,7 @@ export function NewListingForm() {
             <Toggle name="shabbatClock" label="שעון שבת" emoji="⏰" checked={shabbatClock} onChange={setShabbatClock} />
             <Toggle name="sofa" label="ספה נפתחת" emoji="🛋️" checked={sofa} onChange={setSofa} />
             <Toggle name="bedLinens" label="מצעים" emoji="🛏️" checked={bedLinens} onChange={setBedLinens} />
+            <Toggle name="kosherKitchen" label="מטבח כשר" emoji="🍽️" checked={kosherKitchen} onChange={setKosherKitchen} />
           </div>
 
           {/* נוספים */}
