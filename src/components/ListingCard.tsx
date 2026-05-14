@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { MapPin, BedDouble, DoorOpen, Footprints } from "lucide-react";
 import { walkDistanceLabel } from "@/lib/listingLabels";
+import type { WalkDistance } from "@/generated/prisma/enums";
 
 type ListingWithImage = {
   id: string;
   title: string;
   rooms: number;
   beds: number;
-  walkDistance: string;
+  walkDistance: WalkDistance;
   askingPriceNis: number | null;
   address: string | null;
   floor: number | null;
